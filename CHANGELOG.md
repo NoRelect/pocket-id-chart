@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/NoRelect/pocket-id-chart/compare/v1.0.2...v1.0.3) (2026-05-30)
+
+
+### Bug Fixes
+
+* **char:** use recreate deployment strategy ([f315501](https://github.com/NoRelect/pocket-id-chart/commit/f315501568ccbd59a922428373d276c920c623d6))
+
 ## [1.0.2](https://github.com/NoRelect/pocket-id-chart/compare/v1.0.1...v1.0.2) (2026-05-30)
 
 
