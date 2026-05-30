@@ -1,5 +1,9 @@
 replicaCount: 1
 
+# Recreate terminates the old pod before starting the new one, which is
+# required because pocket-id uses a single-writer SQLite database on a PVC.
+deploymentStrategy: Recreate
+
 image:
   repository: ghcr.io/pocket-id/pocket-id
   pullPolicy: IfNotPresent
