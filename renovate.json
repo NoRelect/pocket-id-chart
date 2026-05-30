@@ -12,7 +12,9 @@
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["^Chart\\.yaml$"],
+      "managerFilePatterns": [
+        "/^Chart\\.yaml$/"
+      ],
       "matchStrings": ["appVersion:\\s*\"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "ghcr.io/pocket-id/pocket-id",
       "datasourceTemplate": "docker"
