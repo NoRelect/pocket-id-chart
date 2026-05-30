@@ -47,7 +47,6 @@ securityContext:
 service:
   type: ClusterIP
   port: 1411
-  externalTrafficPolicy: Local
 
 ingress:
   enabled: false
@@ -93,11 +92,8 @@ config:
   # Full external URL where Pocket ID is accessible (required for OIDC redirects).
   appUrl: "http://localhost:1411"
 
-  # Trust proxy headers (X-Forwarded-For) for real client IP extraction.
-  # Set to the CIDR of your ingress controller's pod network (e.g. "10.0.0.0/8")
-  # so pocket-id skips trusted proxy IPs and uses the first untrusted IP in the
-  # X-Forwarded-For chain. "true" trusts all proxies (less precise). "false" disables.
-  trustProxy: "false"
+  # Set to true when running behind a reverse proxy/ingress that terminates TLS.
+  trustProxy: false
 
   # Disable the 24-hour heartbeat that reports instance count to pocket-id.org.
   analyticsDisabled: true
