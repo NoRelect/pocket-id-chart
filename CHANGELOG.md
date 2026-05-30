@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/NoRelect/pocket-id-chart/compare/v1.0.3...v1.0.4) (2026-05-30)
+
+
+### Bug Fixes
+
+* **chart:** do not hide source ip addresses ([023a7e2](https://github.com/NoRelect/pocket-id-chart/commit/023a7e2cf5f21c75e98afd9bc7173e6f1ac51230))
+
 ## [1.0.3](https://github.com/NoRelect/pocket-id-chart/compare/v1.0.2...v1.0.3) (2026-05-30)
 
 
