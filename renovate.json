@@ -1,0 +1,21 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "schedule": ["every weekend"],
+  "packageRules": [
+    {
+      "matchPackageNames": ["ghcr.io/pocket-id/pocket-id"],
+      "semanticCommitType": "fix",
+      "commitMessageTopic": "pocket-id"
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["^Chart\\.yaml$"],
+      "matchStrings": ["appVersion:\\s*\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "ghcr.io/pocket-id/pocket-id",
+      "datasourceTemplate": "docker"
+    }
+  ]
+}
