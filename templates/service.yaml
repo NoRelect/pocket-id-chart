@@ -6,6 +6,9 @@ metadata:
     {{- include "pocket-id.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
+  {{- if or (eq .Values.service.type "LoadBalancer") (eq .Values.service.type "NodePort") }}
+  externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy | default "Local" }}
+  {{- end }}
   ports:
     - port: {{ .Values.service.port }}
       targetPort: http
