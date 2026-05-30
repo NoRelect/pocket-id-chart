@@ -2,7 +2,7 @@ apiVersion: v2
 name: pocket-id
 description: A Helm chart for Pocket ID
 type: application
-version: 1.0.1
+version: 1.0.2
 appVersion: "latest"
 keywords:
   - oidc
