@@ -3,4 +3,12 @@ name: pocket-id
 description: A Helm chart for Pocket ID
 type: application
 version: 0.1.0
-appVersion: "0.1.0"
+appVersion: "latest"
+keywords:
+  - oidc
+  - authentication
+  - passkey
+  - identity
+home: https://pocket-id.org
+sources:
+  - https://github.com/pocket-id/pocket-id

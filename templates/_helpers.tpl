@@ -60,3 +60,23 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Name of the Secret that holds sensitive values.
+Uses an existing secret when specified, otherwise the release-scoped name.
+*/}}
+{{- define "pocket-id.secretName" -}}
+{{- .Values.secret.existingSecret | default (include "pocket-id.fullname" .) }}
+{{- end }}
+
+{{/*
+Full image reference, with optional -distroless suffix.
+*/}}
+{{- define "pocket-id.image" -}}
+{{- $tag := .Values.image.tag | default .Chart.AppVersion }}
+{{- if .Values.image.distroless }}
+{{- printf "%s:%s-distroless" .Values.image.repository $tag }}
+{{- else }}
+{{- printf "%s:%s" .Values.image.repository $tag }}
+{{- end }}
+{{- end }}

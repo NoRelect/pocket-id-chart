@@ -1,62 +1,49 @@
-# Default values for pocket-id.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
-# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
 
-# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
-  repository: nginx
-  # This sets the pull policy for images.
+  repository: ghcr.io/pocket-id/pocket-id
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
+  # Use the distroless variant: smaller attack surface, non-root by default.
+  distroless: true
 
-# This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
-# This is to override the chart name.
 nameOverride: ""
 fullnameOverride: ""
 
-# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
-  # Specifies whether a service account should be created.
   create: true
-  # Automatically mount a ServiceAccount's API credentials?
-  automount: true
-  # Annotations to add to the service account.
+  # Do not auto-mount the service account token
+  automount: false
   annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template.
   name: ""
 
-# This is for setting Kubernetes Annotations to a Pod.
-# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
 podAnnotations: {}
-# This is for setting Kubernetes Labels to a Pod.
-# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 podLabels: {}
 
-podSecurityContext: {}
-  # fsGroup: 2000
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
 
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
 
-# This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
-  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   type: ClusterIP
-  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
-  port: 80
+  port: 1411
 
-# This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
   enabled: false
   className: ""
@@ -64,76 +51,158 @@ ingress:
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
-    - host: chart-example.local
+    - host: pocket-id.example.com
       paths:
         - path: /
-          pathType: ImplementationSpecific
+          pathType: Prefix
   tls: []
-    # - secretName: chart-example-tls
+    # - secretName: pocket-id-tls
     #   hosts:
-    #     - chart-example.local
+    #     - pocket-id.example.com
 
-# -- Expose the service via gateway-api HTTPRoute
-# Requires Gateway API resources and suitable controller installed within the cluster
-# (see: https://gateway-api.sigs.k8s.io/guides/)
 httpRoute:
-  # HTTPRoute enabled.
   enabled: false
-  # HTTPRoute annotations.
   annotations: {}
-  # Which Gateways this Route is attached to.
   parentRefs:
   - name: gateway
     sectionName: http
-    # namespace: default
-  # Hostnames matching HTTP header.
   hostnames:
-  - chart-example.local
-  # List of rules and filters applied.
+  - pocket-id.example.com
   rules:
   - matches:
     - path:
         type: PathPrefix
-        value: /headers
-  #   filters:
-  #   - type: RequestHeaderModifier
-  #     requestHeaderModifier:
-  #       set:
-  #       - name: My-Overwrite-Header
-  #         value: this-is-the-only-value
-  #       remove:
-  #       - User-Agent
-  # - matches:
-  #   - path:
-  #       type: PathPrefix
-  #       value: /echo
-  #     headers:
-  #     - name: version
-  #       value: v2
+        value: /
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+# Persistent storage for /app/data (database, uploads, GeoIP DB).
+persistence:
+  enabled: true
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 1Gi
+  # Use an existing PVC instead of creating one.
+  existingClaim: ""
+  annotations: {}
 
-# This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+config:
+  # Full external URL where Pocket ID is accessible (required for OIDC redirects).
+  appUrl: "http://localhost:1411"
+
+  # Set to true when running behind a reverse proxy/ingress that terminates TLS.
+  trustProxy: false
+
+  # Disable the 24-hour heartbeat that reports instance count to pocket-id.org.
+  analyticsDisabled: true
+  # Disable outbound GitHub requests for version checks.
+  versionCheckDisabled: true
+
+  allowUserSignups: "disabled" # disabled | withToken | open
+  # Session timeout in minutes.
+  sessionDuration: 60
+  emailsVerified: false
+
+  logLevel: "info"
+  logJson: false
+
+  auditLogRetentionDays: 90
+
+  disableRateLimiting: false
+
+  uiConfigDisabled: false
+  appName: "Pocket ID"
+  accentColor: "default"
+  disableAnimations: false
+
+  emailLoginNotificationEnabled: false
+  emailVerificationEnabled: false
+
+  fileBackend: "filesystem"
+
+  tracingEnabled: false
+  metricsEnabled: false
+  # Set to "prometheus" to expose a Prometheus scrape endpoint.
+  otelMetricsExporter: ""
+  # Host/port for the Prometheus metrics server (only used when metricsEnabled).
+  prometheusHost: "0.0.0.0"
+  prometheusPort: 9464
+
+  smtp:
+    enabled: false
+    host: ""
+    port: ""
+    from: ""
+    user: ""
+    # none | starttls | tls
+    tls: "none"
+    skipCertVerify: false
+
+  ldap:
+    enabled: false
+    url: ""
+    bindDn: ""
+    base: ""
+    softDeleteUsers: false
+
+  s3:
+    enabled: false
+    bucket: ""
+    region: ""
+    endpoint: ""
+    accessKeyId: ""
+    forcePathStyle: false
+
+  maxmind:
+    enabled: false
+
+secret:
+  existingSecret: ""
+
+  encryptionKey: ""
+  encryptionKeyKey: "encryption-key"
+
+  smtpPassword: ""
+  smtpPasswordKey: "smtp-password"
+
+  ldapBindPassword: ""
+  ldapBindPasswordKey: "ldap-bind-password"
+
+  s3SecretAccessKey: ""
+  s3SecretAccessKeyKey: "s3-secret-access-key"
+
+  # Static API key that grants admin API access. Leave empty to disable.
+  staticApiKey: ""
+  staticApiKeyKey: "static-api-key"
+
+  maxmindLicenseKey: ""
+  maxmindLicenseKeyKey: "maxmind-license-key"
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    memory: 256Mi
+
 livenessProbe:
-  httpGet:
-    path: /
-    port: http
-readinessProbe:
-  httpGet:
-    path: /
-    port: http
+  exec:
+    command:
+      - /app/pocket-id
+      - healthcheck
+  initialDelaySeconds: 10
+  periodSeconds: 90
+  timeoutSeconds: 5
+  failureThreshold: 3
 
-# This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
+readinessProbe:
+  exec:
+    command:
+      - /app/pocket-id
+      - healthcheck
+  initialDelaySeconds: 5
+  periodSeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 3
+
 autoscaling:
   enabled: false
   minReplicas: 1
@@ -141,21 +210,20 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
-# Additional volumes on the output Deployment definition.
-volumes: []
-  # - name: foo
-  #   secret:
-  #     secretName: mysecret
-  #     optional: false
-
-# Additional volumeMounts on the output Deployment definition.
-volumeMounts: []
-  # - name: foo
-  #   mountPath: "/etc/foo"
-  #   readOnly: true
-
 nodeSelector: {}
-
 tolerations: []
-
 affinity: {}
+
+# Additional environment variables injected verbatim into the container.
+extraEnv: []
+  # - name: MY_VAR
+  #   value: "my-value"
+
+# Additional envFrom sources (ConfigMaps, Secrets).
+extraEnvFrom: []
+  # - secretRef:
+  #     name: my-secret
+
+# Additional volumes / volumeMounts (appended to the chart-managed ones).
+volumes: []
+volumeMounts: []
