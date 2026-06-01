@@ -3,7 +3,7 @@ name: pocket-id
 description: A Helm chart for Pocket ID
 type: application
 version: 0.0.0
-appVersion: "v2.7.0"
+appVersion: "v2.8.0"
 keywords:
   - oidc
   - authentication
